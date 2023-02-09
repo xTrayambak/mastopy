@@ -1,0 +1,242 @@
+#:import Thread threading.Thread
+#:import net webbrowser
+#:import window kivy.core.window.Window
+<Home>:
+
+    focus:
+    md_bg_color: '#212121'
+    MDBoxLayout:
+        orientation: 'vertical'
+
+        MDTopAppBar:
+            id: bar
+            md_bg_color: '#203354'
+            feed_type: app.feed_type
+            title: "Mastopy: " + app.feed_name
+            left_action_items: [['menu', lambda x: sidebar.set_state("open")]]
+            right_action_items: [[app.feed_type, lambda x: Thread(app.switch_feed(self.feed_type)).start()]]
+
+        ScrollView:
+            id: scroll_post
+            scroll_y: 1
+            scroll_speed: 60
+            alert: 40
+            on_scroll_stop: 
+                root.handle_scroll()
+            MDBoxLayout:
+                id: post_container
+                size_hint: 1, None
+                height: self.minimum_height
+                orientation: 'vertical'
+                spacing: '2dp'
+
+
+
+    MDNavigationDrawer:
+        id: sidebar
+        AnchorLayout:
+            anchor_x: "left"
+            anchor_y: "top"
+            height: avatar.height
+            ScrollView:
+                do_scroll_x: False
+                BoxLayout:
+                    id: sidebar_container
+                    orientation: 'vertical'
+                    size_hint: None, .9
+                    FitImage:
+                        id: avatar
+                        size_hint: None, None
+                        size: "56dp", "56dp"
+                        source: app.user_account['avatar']
+                    MDLabel:
+                        size_hint: None, None
+                        text: app.user_account['display_name']
+                    MDList:
+                        size_hint_x: None
+                        OneLineListItem:
+                            #all list items follow all the other args from other list items in its group except certain ones like text.
+                            text: 'Home'
+                            size_hint_x: None
+                            width: sidebar.width/1.1
+                            #width 1.1 arg is to make sure that the list does not exit the boundaries of the sidebar.
+                        OneLineListItem:
+                            text: 'Make Post'
+                            on_release: root.make_post()
+                        OneLineListItem:
+                            text: 'Trending Now'
+                            on_release: root.trending()
+                        OneLineListItem:
+                            text: 'Notifications'
+                            on_release: root.notifs()
+                        OneLineListItem:
+                            text: 'Preferences'
+                            on_release: root.settings()
+                    MDLabel:
+                        id: trending
+                        size_hint: None, None
+                        markup: True
+                        text: "TODO: trending"
+
+
+
+
+# declare MDCard to load posts.
+<PostView>:
+    # declare esesential values for postview, prevents app from fetching values from the internet twice.
+
+    post_id: root.id
+    text: root.text
+    username: root.username
+    usertag: root.usertag
+    icon_source: root.icon_source
+    attachment_image: root.attachment_image
+    liked: root.liked
+    liked_icon: root.liked_icon
+    boosted: root.boosted
+    boosted_icon: root.boosted_icon
+    following: root.following
+    following_icon: root.following_icon
+    account: root.account
+    favourites_count: root.favourites_count
+
+
+    radius: [0,0,0,0]
+    size_hint: 1,None
+    height: 140 + self.ids.post_text.height + self.ids.star_post.height + self.ids.media_attachment.height
+    scroll_speed: 100
+    color: "#83F"
+    
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1    # Blue
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    on_release:
+        app.home_ids.focus = self
+        app.open_post(self.post_id)
+
+    MDRelativeLayout:
+        size_hint: 1,1
+        FitImage:
+            source: root.icon_source
+            pos_hint: {"top": 1, "left": 0}
+            size_hint: .1, None
+            height: '120dp'
+            mipmap: True
+
+        #pos_hint relies on the actual size of a widget
+        #the size of this card widget varies on the length of the text and the size of the photo if one is added,
+        #so in order to combat this I use pos _hint 1 for the usertag widget. This keeps the widget at a relative position but not at a fixed point.
+        #despite this, its position is fixed in relation to the other widgets in the card, making it normal and not changing in position.
+        #To end this hack, I then just bind the y of the username widget to the usertag.y and add some space to it, thus locking it in a position thats fixed
+        #to the other widgets in the card.
+        MDLabel:
+            text: root.username
+            pos_hint: { "right": .45}
+            y: usertag.y+25
+            size_hint: .3,None
+            font_style: 'H6'
+
+        MDLabel:
+            id: usertag
+            text: root.usertag
+            pos_hint: {"top": 1, "right": .85}
+            size_hint: .7,None
+            font_style: 'H6'
+
+        BoxLayout:
+            orientation: 'vertical'
+            id: content_view
+            MDLabel:
+                id: post_text
+                text: root.text
+                adaptive_size: False
+                markup: True
+                on_ref_press: net.open(args[1])
+                text_size: self.width, None
+                size_hint: 1, None
+                font_style: 'Body1'
+                height: self.texture_size[1]
+                color: "black"
+
+            AsyncImage:
+                id: media_attachment
+                source: root.attachment_image
+                size_hint: None,None
+                width: self.texture_size[0]/2 if window.width<self.texture_size[0] else self.texture_size[0]
+                height: self.texture_size[1]/2 if window.height<self.texture_size[1] else self.texture_size[1]
+                mipmap: True
+
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: self.minimum_height
+                post_id: root.id
+                account: root.account
+                following_account: root.following
+                liked: root.liked
+                boosted: root.boosted
+                MDIconButton:
+                    id: star_post
+                    icon: root.liked_icon
+
+                    on_release:
+                        self.parent.liked = root.like_toot(self.parent.post_id, self.parent.liked)
+
+                MDLabel:
+                    id: 'like_counter'
+                    text: str(root.favourites_count)
+
+                MDIconButton:
+                    icon: 'message-reply-outline'
+
+                MDIconButton:
+                    id: boost_post
+                    icon: root.boosted_icon
+
+                    on_release:
+                        self.parent.boosted = root.boost_toot(self.parent.post_id, self.parent.boosted)
+
+                MDIconButton:
+                    id: follow_button
+                    icon: root.following_icon
+
+                    on_release:
+                        self.parent.following_account = root.follow_account(self.parent.account["id"], self.parent.following_account)
+
+
+
+
+<OpenedPost>:
+    MDBoxLayout:
+        pos_hint: {'top': 1}
+        orientation: 'vertical'
+        MDBoxLayout:
+            id: post_holder
+
+
+        ScrollView:
+            id: scroll_post
+            scroll_y: 1
+            pos_hint: {'top': 0.9}
+            MDBoxLayout:
+                id: reply_holder
+                size_hint: 1, None
+                height: self.minimum_height
+                orientation: 'vertical'
+                spacing: '2dp'
+
+
+
+
+
+    MDTopAppBar:
+        md_bg_color: '#203354'
+        title: "Mastopy: Post"
+        pos_hint: {"top": 1}
+        left_action_items: [['keyboard-backspace', lambda x: app.go_home()]]
+
+

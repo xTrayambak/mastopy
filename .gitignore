@@ -1,0 +1,12 @@
+__pycache__
+*.egg
+*.secret
+*.iml
+<<<<<<< HEAD
+*.idea
+=======
+*.txt
+.xml
+/.idea
+
+>>>>>>> f9ba94b11c9b8ad9a23e790332845b90095dc558

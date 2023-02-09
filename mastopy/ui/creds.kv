@@ -1,0 +1,55 @@
+<Login>:
+    md_bg_color: '#212121'
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'top'
+
+        MDLabel:
+            id: "welcome_text"
+            markup: True
+            text: "Welcome to Mastopy!"
+            font_style: 'H6'
+            font_size: '15dp'
+            halign: 'center'
+            color: 1,1,1,1
+            size_hint: 1,None
+
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'center'
+
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: .5,None
+            spacing: '20dp'
+
+            MDTextField:
+                id: "access_token"
+                hint_text_color_normal: 'white'
+                line_color_normal: 'white'
+                hint_text: "Access Token"
+                mode: "rectangle"
+
+
+            MDTextField:
+                id: "fediverse_url"
+                hint_text_color_normal: 'white'
+                line_color_normal: 'white'
+                hint_text: "Fediverse URL"
+                mode: "rectangle"
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'bottom'
+
+        MDFillRoundFlatButton:
+            id: 'login_button'
+            on_release:
+                from mastopy.mastopy_keyring_util import set
+                if len(root.ids['"access_token"'].text) == 0 or len(root.ids['"fediverse_url"'].text) == 0: root.ids['"welcome_text"'].text = "[color=#ff0000]Invalid credentials!\n\nPlease try again."
+                else: root.ids['"welcome_text"'].text = "You're all good to go!\nRestart Mastopy to start using Mastodon!\nWe hope you have a good time!"; set('mastopy_access_token', root.ids['"access_token"'].text); set('mastopy_fediverse_url', root.ids['"fediverse_url"'].text); set('mastopy_firstrun', '1')
+
+            text: 'Login'
+            size_hint: .5,None

@@ -1,0 +1,7 @@
+Mastodon.py
+keyring
+beautifulsoup4
+regex
+
+kivy
+kivymd

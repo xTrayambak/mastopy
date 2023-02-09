@@ -1,0 +1,48 @@
+<Login>:
+
+    md_bg_color: '#212121'
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'top'
+
+        MDLabel:
+            text: "Decrypt credentials"
+            font_name: 'assets/fonts/Bevan/Bevan-Regular.ttf'
+            font_size: '15dp'
+            halign: 'center'
+            color: 1,1,1,1
+            size_hint: 1,None
+
+        MDLabel:
+            text: "If you have lost your encryption key, you can no longer log in. We cannot help you in that case."
+            font_name: 'assets/fonts/Bevan/Bevan-Regular.ttf'
+            font_size: '10dp'
+            halign: 'center'
+            color: 1,1,1,1
+            size_hint: 1,None
+
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'center'
+
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: .5,None
+            spacing: '20dp'
+
+            MDTextField:
+                hint_text_color_normal: 'white'
+                line_color_normal: 'white'
+                hint_text: "Encryption Key"
+                mode: "rectangle"
+
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'bottom'
+
+        MDFillRoundFlatButton:
+            text: 'Login'
+            size_hint: .5,None
